@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS `Sizes` (
   PRIMARY KEY (`sizeId`)
 );
 
--- 3. Employees Table
+-- 3. Employees Table: Stores staff profile details. Tracks who processed each POS transaction 
+-- for performance auditing, sales tracking, and issue resolution.
 CREATE TABLE IF NOT EXISTS `Employees` (
   `employeeId` INT NOT NULL AUTO_INCREMENT,
   `firstName` VARCHAR(50) NOT NULL,
@@ -84,7 +85,9 @@ CREATE TABLE IF NOT EXISTS `Candles` (
     ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
--- 6. Sales Table
+-- 6. Sales Table: Transaction header recording register exchange events. 
+-- Uses ON DELETE RESTRICT for employeeId and customerId to enforce non-null transaction relationships 
+-- and prevent accidental deletion of historical financial revenue data.
 CREATE TABLE IF NOT EXISTS `Sales` (
   `saleId` INT NOT NULL AUTO_INCREMENT,
   `saleTimestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
