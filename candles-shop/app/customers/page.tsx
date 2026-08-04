@@ -1,11 +1,21 @@
 'use client';
 
+import mockData from '../mockdata.json';
+import Table, { ColumnDefinition } from '../components/Table';
+
 export default function CustomersPage() {
+    const customerColumns: ColumnDefinition[] = [
+        { key: 'id', header: 'ID', type: 'int', width: '50px' },
+        { key: 'first_name', header: 'First Name', type: 'string' },
+        { key: 'last_name', header: 'Last Name', type: 'string' },
+        { key: 'email', header: 'Email', type: 'string' },
+    ];
+
     return (
         <main>
             <h1>Customers</h1>
             <h2>Add Customer (INSERT)</h2>
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
                 <input type="text" placeholder="First Name" required />
                 <input type="text" placeholder="Last Name" required />
                 <input type="email" placeholder="Email" required />
@@ -13,26 +23,13 @@ export default function CustomersPage() {
             </form>
 
             <h2>Customers List (SELECT, UPDATE, DELETE)</h2>
-            <table style={{ border: '1px solid black', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Email</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Jane</td>
-                        <td>Doe</td>
-                        <td>jane@example.com</td>
-                        <td><button>Edit</button> <button>Delete</button></td>
-                    </tr>
-                </tbody>
-            </table>
+            <Table
+                columns={customerColumns}
+                data={mockData.customers}
+                // renderActions={(item) => (
+                //     <><button>Edit</button> <button>Delete</button></>
+                // )}
+            />
         </main>
     );
 }

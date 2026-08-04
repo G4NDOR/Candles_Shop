@@ -1,35 +1,35 @@
 'use client';
 
+import mockData from '../mockdata.json';
+import Table, { ColumnDefinition } from '../components/Table';
+
 export default function EmployeesPage() {
+    const employeeColumns: ColumnDefinition[] = [
+        { key: 'id', header: 'ID', type: 'int', width: '50px' },
+        { key: 'first_name', header: 'First Name', type: 'string' },
+        { key: 'last_name', header: 'Last Name', type: 'string' },
+        { key: 'hire_date', header: 'Hire Date', type: 'date' },
+    ];
+
     return (
         <main>
             <h1>Employees</h1>
             <h2>Add Employee (INSERT)</h2>
-            <form onSubmit={(e) => e.preventDefault()}>
+            <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
                 <input type="text" placeholder="First Name" required />
                 <input type="text" placeholder="Last Name" required />
+                <input type="date" placeholder="Hire Date" required />
                 <button type="submit">Add Employee</button>
             </form>
 
             <h2>Employees List (SELECT, UPDATE, DELETE)</h2>
-            <table style={{ border: '1px solid black', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>First Name</th>
-                        <th>Last Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>John</td>
-                        <td>Smith</td>
-                        <td><button>Edit</button> <button>Delete</button></td>
-                    </tr>
-                </tbody>
-            </table>
+            <Table
+                columns={employeeColumns}
+                data={mockData.employees}
+                // renderActions={(item) => (
+                //     <><button>Edit</button> <button>Delete</button></>
+                // )}
+            />
         </main>
     );
 }
