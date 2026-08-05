@@ -1,6 +1,6 @@
 'use client';
 
-import mockData from '../mockdata.json';
+import Form from '../components/Form';
 import Table, { ColumnDefinition } from '../components/Table';
 
 export default function CustomersPage() {
@@ -12,24 +12,17 @@ export default function CustomersPage() {
     ];
 
     return (
-        <main>
-            <h1>Customers</h1>
-            <h2>Add Customer (INSERT)</h2>
-            <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '16px' }}>
-                <input type="text" placeholder="First Name" required />
-                <input type="text" placeholder="Last Name" required />
-                <input type="email" placeholder="Email" required />
-                <button type="submit">Add Customer</button>
-            </form>
-
-            <h2>Customers List (SELECT, UPDATE, DELETE)</h2>
-            <Table
-                columns={customerColumns}
-                data={mockData.customers}
-                // renderActions={(item) => (
-                //     <><button>Edit</button> <button>Delete</button></>
-                // )}
-            />
-        </main>
+        <div style={{ padding: '2rem' }}>
+            <main>
+                <h1>Customers</h1>
+                <Form tableName="customers" columns={customerColumns} />
+    
+                <h2>Customers List (SELECT, UPDATE, DELETE)</h2>
+                <Table
+                    columns={customerColumns}
+                    tableName="customers"
+                />
+            </main>
+        </div>
     );
 }
