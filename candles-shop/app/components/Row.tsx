@@ -7,7 +7,8 @@ import Cell from './Cell'; // Import Cell component
 import { ColumnDefinition } from './Table'; // Import ColumnDefinition type from Table component
 import { RootState, AppDispatch } from '../store';
 import { deleteRow, updateRowFields, updateCellValue } from '../dataSlice';
-import { deleteItem, update } from '../../../api';
+import { deleteItem, update } from '../../api';
+import { setLoading, setNotification } from './uiSlice';
 import mockData from '../mockdata.json';
 
 interface RowProps {
@@ -40,8 +41,17 @@ export default function Row({ tableName, columns, rowIndex }: RowProps) {
 
     const handleDelete = async () => {
         if (window.confirm(`Are you sure you want to delete this item?`)) {
-            await deleteItem(tableName, id);
-            dispatch(deleteRow({ tableName, id }));
+            dispatch(setLoading(true));
+            try {
+                await deleteItem(tableName, id);
+                dispatch(deleteRow({ tableName, id }));
+                dispatch(setNotification({ type: 'success', message: 'Item deleted successfully!' }));
+            } catch (error: any) {
+                console.error("Failed to delete item:", error);
+                dispatch(setNotification({ type: 'error', message: error.message || 'Failed to delete item.' }));
+            } finally {
+                dispatch(setLoading(false));
+            }
         }
     };
 
@@ -57,15 +67,33 @@ export default function Row({ tableName, columns, rowIndex }: RowProps) {
     };
 
     const handleRowEditSave = async () => {
-        await update(tableName, id, editedData);
-        dispatch(updateRowFields({ tableName, id, updatedFields: editedData }));
-        setIsRowEditing(false);
+        dispatch(setLoading(true));
+        try {
+            await update(tableName, id, editedData);
+            dispatch(updateRowFields({ tableName, id, updatedFields: editedData }));
+            setIsRowEditing(false);
+            dispatch(setNotification({ type: 'success', message: 'Row updated successfully!' }));
+        } catch (error: any) {
+            console.error("Failed to save row:", error);
+            dispatch(setNotification({ type: 'error', message: error.message || 'Failed to save changes.' }));
+        } finally {
+            dispatch(setLoading(false));
+        }
     };
 
     const handleCellSave = async (columnKey: string, value: any) => {
-        await update(tableName, id, { [columnKey]: value });
-        dispatch(updateCellValue({ tableName, rowIndex, columnKey, value, id }));
-        setActiveCellEdit(null);
+        dispatch(setLoading(true));
+        try {
+            await update(tableName, id, { [columnKey]: value });
+            dispatch(updateCellValue({ tableName, rowIndex, columnKey, value, id }));
+            setActiveCellEdit(null);
+            dispatch(setNotification({ type: 'success', message: 'Cell updated successfully!' }));
+        } catch (error: any) {
+            console.error("Failed to save cell:", error);
+            dispatch(setNotification({ type: 'error', message: error.message || 'Failed to save cell.' }));
+        } finally {
+            dispatch(setLoading(false));
+        }
     };
 
     const rowStyle = {

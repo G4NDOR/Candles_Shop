@@ -4,11 +4,12 @@ import React, { useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { ColumnDefinition } from './Table';
-import TableHeader from './TableHeader';
+import TableHeader from './TableHeader'; // Make sure this import is correct
 import { insertRow } from '../dataSlice';
-import { insert } from '../../../api';
+import { insert } from '../../api';
 import mockData from '../mockdata.json';
 import FormRow from './FormRow';
+import { setLoading, setNotification } from './uiSlice';
 
 interface FormProps {
     tableName: keyof typeof mockData;
@@ -81,9 +82,18 @@ export default function Form({ tableName, columns }: FormProps) {
 
     const handleConfirmRow = async (index: number) => {
         const rowToInsert = formRows[index];
-        await insert(tableName, rowToInsert);
-        dispatch(insertRow({ tableName, row: rowToInsert }));
-        handleRemoveRow(index); // Remove from form after successful insertion
+        dispatch(setLoading(true));
+        try {
+            await insert(tableName, rowToInsert);
+            dispatch(insertRow({ tableName, row: rowToInsert }));
+            handleRemoveRow(index); // Remove from form after successful insertion
+            dispatch(setNotification({ type: 'success', message: 'Item added successfully!' }));
+        } catch (error: any) {
+            console.error("Failed to insert row:", error);
+            dispatch(setNotification({ type: 'error', message: error.message || 'Failed to add item.' }));
+        } finally {
+            dispatch(setLoading(false));
+        }
     };
 
     const formColumns = columns.filter(c => c.key !== 'actions');
