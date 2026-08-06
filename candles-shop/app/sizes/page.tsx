@@ -1,32 +1,27 @@
 'use client';
 
-export default function SizesPage() {
-    return (
-        <main>
-            <h1>Sizes</h1>
-            <h2>Add Size (INSERT)</h2>
-            <form onSubmit={(e) => e.preventDefault()}>
-                <input type="text" placeholder="Size Name (e.g., 8 oz)" required />
-                <button type="submit">Add Size</button>
-            </form>
+import Form from '../components/Form';
+import Table, { ColumnDefinition } from '../components/Table';
 
-            <h2>Sizes List (SELECT, UPDATE, DELETE)</h2>
-            <table style={{ border: '1px solid black', borderCollapse: 'collapse' }}>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Size Name</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>8 oz</td>
-                        <td><button>Edit</button> <button>Delete</button></td>
-                    </tr>
-                </tbody>
-            </table>
-        </main>
+export default function SizesPage() {
+    const sizeColumns: ColumnDefinition[] = [
+        { key: 'id', header: 'ID', type: 'int', width: '50px' },
+        { key: 'name', header: 'Size Label', type: 'string' },
+        { key: 'volume_oz', header: 'Volume (oz)', type: 'size_oz' },
+    ];
+
+    return (
+        <div style={{ padding: '2rem' }}>
+            <main>
+                <h1>Sizes</h1>
+                <Form tableName="sizes" columns={sizeColumns} />
+    
+                <h2>Sizes List (SELECT, UPDATE, DELETE)</h2>
+                <Table
+                    columns={sizeColumns}
+                    tableName="sizes"
+                />
+            </main>
+        </div>
     );
 }
