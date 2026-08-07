@@ -85,7 +85,7 @@ export default function Row({ tableName, columns, rowIndex }: RowProps) {
         dispatch(setLoading(true));
         try {
             await update(tableName, id, { [columnKey]: value });
-            dispatch(updateCellValue({ tableName, rowIndex, columnKey, value, id }));
+            dispatch(updateCellValue({ tableName, rowIndex, columnKey, value }));
             setActiveCellEdit(null);
             dispatch(setNotification({ type: 'success', message: 'Cell updated successfully!' }));
         } catch (error: any) {

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { ColumnDefinition } from './Table';
+import { DataType } from '../types';
 import InputCell from './Input';
 
 interface FormRowProps {
@@ -29,7 +30,7 @@ export default function FormRow({ columns, rowData, onUpdate, onConfirm, onCance
                         <InputCell
                             value={rowData[col.key]}
                             onChange={(newValue) => handleValueChange(col.key, newValue)}
-                            type={col.type === 'price' || col.type === 'size_oz' ? 'float' : col.type}
+                            type={col.type === 'price' || col.type === 'size_oz' ? DataType.Float : (col.type as DataType)}
                             options={col.options}
                         />
                     )}
