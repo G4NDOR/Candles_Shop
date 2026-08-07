@@ -23,7 +23,7 @@ const generateNewRow = (columns: ColumnDefinition[], nextId: number) => {
             // Initialize with default values based on type
             switch (col.type) {
                 case 'int':
-                case 'float':
+                case 'float':  // added float type to Column definition in Project/candles-shop/app/components/Table.tsx
                 case 'price':
                 case 'size_oz':
                     newRow[col.key] = 0;

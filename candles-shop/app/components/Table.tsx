@@ -10,7 +10,7 @@ import mockData from '../mockdata.json';
 export interface ColumnDefinition {
     key: string; // The key to access the data from the item object (e.g., 'scentId')
     header: string; // The text to display in the table header (e.g., 'ID')
-    type?: 'string' | 'int' | 'price' | 'date' | 'size_oz' | 'dropdown'; // Type for Cell to format data
+    type?: 'string' | 'int' | 'float' | 'price' | 'date' | 'size_oz' | 'dropdown'; // Type for Cell to format data
     width?: string; // Optional width for the column, e.g., '100px' or '20%'
     options?: { value: string | number, label: string }[]; // Optional for dropdown type
 }

@@ -6,7 +6,7 @@ import InputCell from './Input';
 
 interface CellProps {
     value: any;
-    type?: 'string' | 'int' | 'price' | 'date' | 'size_oz' | 'dropdown';
+    type?: 'string' | 'int' | 'float' | 'price' | 'date' | 'size_oz' | 'dropdown';
     options?: { value: string | number, label: string }[]; // For dropdown type
     isRowEditing: boolean;
     isCellEditing: boolean;
