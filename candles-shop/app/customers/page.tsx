@@ -6,9 +6,9 @@ import { DataType } from '../types';
 
 export default function CustomersPage() {
     const customerColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'ID', type: DataType.Int, width: '50px' },
-        { key: 'first_name', header: 'First Name', type: DataType.String },
-        { key: 'last_name', header: 'Last Name', type: DataType.String },
+        { key: 'customerId', header: 'ID', type: DataType.Int, width: '50px' },
+        { key: 'firstName', header: 'First Name', type: DataType.String },
+        { key: 'lastName', header: 'Last Name', type: DataType.String },
         { key: 'email', header: 'Email', type: DataType.String },
     ];
 

@@ -1,5 +1,5 @@
 // app/components/Table.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import Row from './Row'; // Import Row component
 import TableHeader from './TableHeader'; // Import TableHeader component
@@ -25,20 +25,22 @@ interface TableProps {
 
 export default function Table({ tableName, columns }: TableProps) {
     const dataLength = useSelector((state: RootState) => state.data[tableName]?.length ?? 0);
-    const data = Array.from({ length: dataLength }, (_, i) => i); // Create an array of indices
+    const data = useMemo(() => Array.from({ length: dataLength }, (_, i) => i), [dataLength]); // Create an array of indices
 
-    // Calculate default width for columns that don't have one specified
-    // Add 1 for the actions column
-    const numColumns = columns.length + 1;
-    const defaultColWidth = numColumns > 0 ? `${100 / numColumns}%` : undefined;
+    const columnsWithCalculatedWidth: ColumnDefinition[] = useMemo(() => {
+        // Calculate default width for columns that don't have one specified
+        // Add 1 for the actions column
+        const numColumns = columns.length + 1;
+        const defaultColWidth = numColumns > 0 ? `${100 / numColumns}%` : undefined;
 
-    // Create a new array of columns with calculated widths if not already present
-    const columnsWithCalculatedWidth: ColumnDefinition[] = columns.map(col => ({
-        ...col,
-        width: col.width || defaultColWidth
-    }));
+        // Create a new array of columns with calculated widths if not already present
+        const calculated = columns.map(col => ({
+            ...col,
+            width: col.width || defaultColWidth
+        }));
 
-    columnsWithCalculatedWidth.push({ key: 'actions', header: '', width: '100px' });
+        return [...calculated, { key: 'actions', header: '', width: '100px' }];
+    }, [columns]);
 
     return (
         <table style={{ border: '1px solid black', borderCollapse: 'collapse', width: '100%' }}>

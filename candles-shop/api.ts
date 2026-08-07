@@ -41,8 +41,17 @@ async function handleResponse(response: Response) {
  */
 export const fetchAllData = async () => {
     console.log(`[API] GET to /api/data to fetch all initial data.`);
-    const response = await fetch('/api/data');
-    return handleResponse(response);
+    const tables = ['candles', 'scents', 'sizes', 'customers', 'employees', 'sales', 'sales-items'];
+    
+    const results = await Promise.all(
+        tables.map(async (table) => {
+            const response = await fetch(`/api/data?table=${table}`);
+            const data = await handleResponse(response);
+            return [table, data];
+        })
+    );
+
+    return Object.fromEntries(results);
 };
 
 /**

@@ -6,7 +6,7 @@ import Navbar from './Navbar';
 import LoadingSpinner from './LoadingSpinner';
 import Notification from './Notification';
 
-// This seems to be a custom layout component. Let's ensure it's using the Provider correctly.
+
 export default function RootLayout({
   children,
 }: {

@@ -1,3 +1,4 @@
+// redux/hooks/scentsSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
 
