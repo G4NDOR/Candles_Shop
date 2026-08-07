@@ -4,4 +4,5 @@ export enum DataType {
     Float = 'float',
     Date = 'date',
     Dropdown = 'dropdown',
+    Bool = 'bool'
 }

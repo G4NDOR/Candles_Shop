@@ -25,7 +25,12 @@ export function getTableColumns(tableName: string, allData: any): ColumnDefiniti
             { key: 'email', header: 'Email', type: 'string' },
             { key: 'phone', header: 'Phone', type: 'string' },
             { key: 'createdDate', header: 'Created Date', type: 'date' },
-            { key: 'isActive', header: 'Active Status', type: 'int' },
+            { key: 'isActive', header: 'Active Status', type: 'bool',
+                options: [
+                    { value: 1, label: 'Yes' },
+                    { value: 0, label: 'No' }
+                ]
+            },
         ],
         candles: [
             { key: 'candleId', header: 'ID' },

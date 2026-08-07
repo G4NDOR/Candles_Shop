@@ -40,6 +40,9 @@ const generateNewRow = (columns: ColumnDefinition[], tableName: keyof typeof moc
                 case DataType.Dropdown:
                     newRow[col.key] = col.options?.[0]?.value ?? '';
                     break;
+                case DataType.Bool:
+                    newRow[col.key] = col.options?.[0]?.value ?? '';
+                    break;
                 default:
                     newRow[col.key] = '';
             }

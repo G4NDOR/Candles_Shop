@@ -76,6 +76,11 @@ export default function InputCell({
                 if (!isNaN(Number(newValue)) && newValue !== '') {
                     newValue = Number(newValue);
                 }
+            case DataType.Bool:
+                if (!isNaN(Number(newValue)) && newValue !== '') {
+                    console.log("Bool setting value to number ", newValue)
+                    newValue = Number(newValue);
+                }
             default:
                 // No specific validation for string or dropdown value beyond required
                 break;
@@ -116,6 +121,32 @@ export default function InputCell({
                 >
                     {placeholder && <option value="" disabled={required}>{placeholder}</option>}
                     {options.map((option, index) => (
+                        <option key={index} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
+            );
+        case DataType.Bool:
+            let boolOptions = [
+                {
+                    value: 1,
+                    label: 'Yes'
+                },
+                {
+                    value: 0,
+                    label: 'No'
+                }
+            ]
+            return (
+                <select
+                    value={inputValue}
+                    onChange={handleChange}
+                    style={baseStyle}
+                    required={required}
+                >
+                    {placeholder && <option value="" disabled={required}>{placeholder}</option>}
+                    {boolOptions.map((option, index) => (
                         <option key={index} value={option.value}>
                             {option.label}
                         </option>

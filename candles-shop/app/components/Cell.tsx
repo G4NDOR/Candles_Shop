@@ -90,7 +90,11 @@ export default function Cell({ value, type = DataType.String, options, isRowEdit
             const selectedOption = options?.find(opt => opt.value == value);
             displayValue = selectedOption ? selectedOption.label : value;
             break;
-
+        
+        case 'bool':
+            console.log(" bool value is ", value)
+            displayValue = value ? 'Yes' : 'No';
+            break;
         // 'string' and 'int' types display data as is, which is the default.
     }
 
