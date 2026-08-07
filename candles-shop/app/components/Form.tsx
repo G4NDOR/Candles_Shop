@@ -10,6 +10,7 @@ import { insert } from '../../api';
 import mockData from '../mockdata.json';
 import FormRow from './FormRow';
 import { setLoading, setNotification } from './uiSlice';
+import { DataType } from '../types';
 
 interface FormProps {
     tableName: keyof typeof mockData;
@@ -22,16 +23,18 @@ const generateNewRow = (columns: ColumnDefinition[], nextId: number) => {
         if (col.key !== 'id') {
             // Initialize with default values based on type
             switch (col.type) {
-                case 'int':
-                case 'float':
+                case DataType.Int:
+                    newRow[col.key] = 0;
+                    break;
+                case DataType.Float:
                 case 'price':
                 case 'size_oz':
                     newRow[col.key] = 0;
                     break;
-                case 'date':
+                case DataType.Date:
                     newRow[col.key] = new Date().toISOString().split('T')[0];
                     break;
-                case 'dropdown':
+                case DataType.Dropdown:
                     newRow[col.key] = col.options?.[0]?.value ?? '';
                     break;
                 default:
@@ -82,11 +85,15 @@ export default function Form({ tableName, columns }: FormProps) {
 
     const handleConfirmRow = async (index: number) => {
         const rowToInsert = formRows[index];
+        // The database will generate the ID, so we don't need the client-side guess.
+        const { id, ...dataToInsert } = rowToInsert;
+
         dispatch(setLoading(true));
         try {
-            await insert(tableName, rowToInsert);
-            dispatch(insertRow({ tableName, row: rowToInsert }));
-            handleRemoveRow(index); // Remove from form after successful insertion
+            // The `insert` function now returns the complete row from the database, including the real ID.
+            const newRowFromDb = await insert(tableName, dataToInsert);
+            dispatch(insertRow({ tableName, row: newRowFromDb }));
+            handleRemoveRow(index); // Remove the row from the form after it's successfully saved.
             dispatch(setNotification({ type: 'success', message: 'Item added successfully!' }));
         } catch (error: any) {
             console.error("Failed to insert row:", error);

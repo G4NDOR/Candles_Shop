@@ -2,11 +2,13 @@
 
 // app/components/Cell.tsx
 import React, { useState, useEffect } from 'react';
+import { DataType } from '../types';
+import { ColumnType } from './Table';
 import InputCell from './Input';
 
 interface CellProps {
     value: any;
-    type?: 'string' | 'int' | 'price' | 'date' | 'size_oz' | 'dropdown';
+    type?: ColumnType;
     options?: { value: string | number, label: string }[]; // For dropdown type
     isRowEditing: boolean;
     isCellEditing: boolean;
@@ -17,7 +19,7 @@ interface CellProps {
     onValueChange: (newValue: any) => void;
 }
 
-export default function Cell({ value, type = 'string', options, isRowEditing, isCellEditing, isEditable, onCellEditStart, onCellEditCancel, onCellEditSave, onValueChange }: CellProps) {
+export default function Cell({ value, type = DataType.String, options, isRowEditing, isCellEditing, isEditable, onCellEditStart, onCellEditCancel, onCellEditSave, onValueChange }: CellProps) {
     const [isHovered, setIsHovered] = useState(false);
     const [cellValue, setCellValue] = useState(value);
 
@@ -25,9 +27,10 @@ export default function Cell({ value, type = 'string', options, isRowEditing, is
         setCellValue(value);
     }, [value]);
 
-    // Map 'price' and 'size_oz' to a more generic 'float' for the InputCell
-    const inputType = (t: typeof type) => {
-        if (t === 'price' || t === 'size_oz') return 'float';
+    // Map special formatting types to a generic DataType for the InputCell
+    const inputType = (t: ColumnType): DataType => {
+        if (t === 'price' || t === 'size_oz') return DataType.Float;
+        if (Object.values(DataType).includes(t as DataType)) return t as DataType;
         return t;
     };
 
