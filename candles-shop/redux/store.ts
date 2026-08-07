@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import scentsReducer from './slices/scentsSlice';
+import scentsReducer from './hooks/scentsSlice';
 
 export const store = configureStore({
     reducer: {

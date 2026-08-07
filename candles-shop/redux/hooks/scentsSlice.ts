@@ -29,6 +29,6 @@ const scentsSlice = createSlice({
 
 export const { addScent } = scentsSlice.actions;
 
-export const selectScents = (state: RootState) => state.scents.scents;
+export const selectScents = (state: { scents: ScentsState }) => state.scents.scents;
 
 export default scentsSlice.reducer;
