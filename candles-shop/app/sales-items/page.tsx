@@ -3,19 +3,20 @@
 import mockData from '../mockdata.json';
 import Form from '../components/Form';
 import Table, { ColumnDefinition } from '../components/Table';
+import { DataType } from '../types';
 
 export default function SalesItemsPage() {
     const salesItemsColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'Item ID', type: 'int', width: '80px' },
+        { key: 'id', header: 'Item ID', type: DataType.Int, width: '80px' },
         {
-            key: 'sale_id', header: 'Sale ID', type: 'dropdown', width: '80px',
+            key: 'sale_id', header: 'Sale ID', type: DataType.Dropdown, width: '80px',
             options: mockData.sales.map(s => ({ value: s.id, label: `Sale #${s.id}` }))
         },
         {
-            key: 'candle_id', header: 'Candle', type: 'dropdown',
+            key: 'candle_id', header: 'Candle', type: DataType.Dropdown,
             options: mockData.candles.map(c => ({ value: c.id, label: c.name }))
         },
-        { key: 'quantity', header: 'Quantity', type: 'int' },
+        { key: 'quantity', header: 'Quantity', type: DataType.Int },
         { key: 'price_at_sale', header: 'Price at Sale', type: 'price' },
     ];
 

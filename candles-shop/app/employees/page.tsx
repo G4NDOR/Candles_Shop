@@ -2,13 +2,14 @@
 
 import Form from '../components/Form';
 import Table, { ColumnDefinition } from '../components/Table';
+import { DataType } from '../types';
 
 export default function EmployeesPage() {
     const employeeColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'ID', type: 'int', width: '50px' },
-        { key: 'first_name', header: 'First Name', type: 'string' },
-        { key: 'last_name', header: 'Last Name', type: 'string' },
-        { key: 'hire_date', header: 'Hire Date', type: 'date' },
+        { key: 'id', header: 'ID', type: DataType.Int, width: '50px' },
+        { key: 'first_name', header: 'First Name', type: DataType.String },
+        { key: 'last_name', header: 'Last Name', type: DataType.String },
+        { key: 'hire_date', header: 'Hire Date', type: DataType.Date },
     ];
 
     return (

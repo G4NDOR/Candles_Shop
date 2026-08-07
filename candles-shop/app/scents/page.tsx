@@ -2,11 +2,12 @@
 
 import Table, { ColumnDefinition } from '../components/Table'; // Import ColumnDefinition type
 import Form from '../components/Form';
+import { DataType } from '../types';
 export default function ScentsPage() {
     // Define columns for the Table component
     const scentColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'ID', type: 'int', width: '50px' },
-        { key: 'name', header: 'Scent Name', type: 'string' },
+        { key: 'id', header: 'ID', type: DataType.Int, width: '50px' },
+        { key: 'name', header: 'Scent Name', type: DataType.String },
     ];
 
     return (

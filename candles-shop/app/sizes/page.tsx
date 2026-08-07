@@ -2,11 +2,12 @@
 
 import Form from '../components/Form';
 import Table, { ColumnDefinition } from '../components/Table';
+import { DataType } from '../types';
 
 export default function SizesPage() {
     const sizeColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'ID', type: 'int', width: '50px' },
-        { key: 'name', header: 'Size Label', type: 'string' },
+        { key: 'id', header: 'ID', type: DataType.Int, width: '50px' },
+        { key: 'name', header: 'Size Label', type: DataType.String },
         { key: 'volume_oz', header: 'Volume (oz)', type: 'size_oz' },
     ];
 
