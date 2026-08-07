@@ -20,7 +20,7 @@ interface FormProps {
 const generateNewRow = (columns: ColumnDefinition[], nextId: number) => {
     const newRow: any = { id: nextId };
     columns.forEach(col => {
-        if (col.key !== 'id') {
+        if (!col.key.toLowerCase().endsWith('id')) {
             // Initialize with default values based on type
             switch (col.type) {
                 case DataType.Int:
@@ -51,7 +51,10 @@ export default function Form({ tableName, columns }: FormProps) {
 
     const nextId = useMemo(() => {
         if (!existingData || existingData.length === 0) return 1;
-        return Math.max(...existingData.map(item => item.id)) + 1;
+        const sample = existingData[0] || {};
+        const idKey = Object.keys(sample).find(k => k.toLowerCase().endsWith('id')) || 'id';
+        const ids = existingData.map(item => Number(item[idKey] || 0)).filter(n => !isNaN(n));
+        return ids.length > 0 ? Math.max(...ids) + 1 : 1;
     }, [existingData]);
 
     const [formRows, setFormRows] = useState([generateNewRow(columns, nextId)]);
@@ -112,7 +115,7 @@ export default function Form({ tableName, columns }: FormProps) {
                 <tbody>
                     {formRows.map((rowData, index) => (
                         <FormRow
-                            key={rowData.id}
+                            key={rowData.id || index}
                             columns={formColumns}
                             rowData={rowData}
                             onUpdate={(updatedData) => handleUpdateRow(index, updatedData)}

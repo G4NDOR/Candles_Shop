@@ -18,7 +18,7 @@ interface RowProps {
 }
 
 export default function Row({ tableName, columns, rowIndex }: RowProps) {
-    const item = useSelector((state: RootState) => state.data[tableName][rowIndex], shallowEqual);
+    const item = useSelector((state: RootState) => state.data[tableName]?.[rowIndex], shallowEqual);
     const dispatch: AppDispatch = useDispatch();
 
     const [isHovered, setIsHovered] = useState(false);
@@ -37,7 +37,8 @@ export default function Row({ tableName, columns, rowIndex }: RowProps) {
         return null; // Don't render if the item has been deleted or doesn't exist.
     }
 
-    const { id } = item;
+    const idKey = Object.keys(item).find(k => k.toLowerCase().endsWith('id')) || 'id';
+    const id = item[idKey] ?? item.id;
 
     const handleDelete = async () => {
         if (window.confirm(`Are you sure you want to delete this item?`)) {
@@ -106,19 +107,19 @@ export default function Row({ tableName, columns, rowIndex }: RowProps) {
             {columns.map((col, colIndex) => {
                 if (col.key === 'actions') return null; // The actions column is handled separately
                 return ( // Use colIndex for key
-                    <td key={colIndex} style={{
+                    <td key={col.key || colIndex} style={{
                         width: col.width,
                         minWidth: '120px', // Ensure cells don't get too squished
                         padding: '8px',
                         borderBottom: '1px solid #ddd',
                     }}>
                         <Cell
-                            value={isEditing ? editedData[col.key] : item[col.key]}
+                            value={isEditing ? editedData?.[col.key] : item[col.key]}
                             type={col.type}
                             options={col.options}
                             isRowEditing={isRowEditing}
                             isCellEditing={activeCellEdit === col.key}
-                            isEditable={col.key !== 'id'}
+                            isEditable={!col.key.toLowerCase().endsWith('id')}
                             onCellEditStart={() => {
                                 if (!isRowEditing) setActiveCellEdit(col.key);
                             }}

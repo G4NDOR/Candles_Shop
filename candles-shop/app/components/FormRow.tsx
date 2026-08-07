@@ -20,22 +20,26 @@ export default function FormRow({ columns, rowData, onUpdate, onConfirm, onCance
 
     return (
         <tr style={{ backgroundColor: '#f0f7ff' }}>
-            {columns.map(col => (
-                <td key={col.key} style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>
-                    {col.key === 'id' ? (
-                        <div style={{ textAlign: 'center', padding: '8px', color: '#888' }}>
-                            {rowData.id} (auto)
-                        </div>
-                    ) : (
-                        <InputCell
-                            value={rowData[col.key]}
-                            onChange={(newValue) => handleValueChange(col.key, newValue)}
-                            type={col.type === 'price' || col.type === 'size_oz' ? DataType.Float : (col.type as DataType)}
-                            options={col.options}
-                        />
-                    )}
-                </td>
-            ))}
+            {columns.map((col, index) => {
+                const isPrimaryKey = col.key === 'id' || index === 0;
+
+                return (
+                    <td key={col.key} style={{ padding: '8px', borderBottom: '1px solid #ddd' }}>
+                        {isPrimaryKey ? (
+                            <div style={{ textAlign: 'center', padding: '8px', color: '#888' }}>
+                                {rowData[col.key] ?? rowData.id} (auto)
+                            </div>
+                        ) : (
+                            <InputCell
+                                value={rowData[col.key] ?? ''}
+                                onChange={(newValue) => handleValueChange(col.key, newValue)}
+                                type={col.type === 'price' || col.type === 'size_oz' ? DataType.Float : (col.type as DataType)}
+                                options={col.options}
+                            />
+                        )}
+                    </td>
+                );
+            })}
             <td style={{ padding: '8px', borderBottom: '1px solid #ddd', textAlign: 'right' }}>
                 <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
                     <button onClick={onConfirm} title="Confirm Insert">✓</button>
