@@ -7,13 +7,13 @@ import { RootState } from '../store';
 import mockData from '../mockdata.json';
 import { DataType } from '../types';
 
-export type ColumnType = DataType | 'price' | 'size_oz';
+export type ColumnType = DataType | 'price' | 'size_oz' | string;
 
 // Define a type for column definitions
 export interface ColumnDefinition {
     key: string; // The key to access the data from the item object (e.g., 'scentId')
     header: string; // The text to display in the table header (e.g., 'ID')
-    type?: ColumnType; // Type for Cell to format/edit data
+    type?: string; // Type for Cell to format/edit data
     width?: string; // Optional width for the column, e.g., '100px' or '20%'
     options?: { value: string | number, label: string }[]; // Optional for dropdown type
 }

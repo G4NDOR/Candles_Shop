@@ -8,7 +8,7 @@ import InputCell from './Input';
 
 interface CellProps {
     value: any;
-    type?: ColumnType;
+    type?: string;
     options?: { value: string | number, label: string }[]; // For dropdown type
     isRowEditing: boolean;
     isCellEditing: boolean;
@@ -31,7 +31,7 @@ export default function Cell({ value, type = DataType.String, options, isRowEdit
     const inputType = (t: ColumnType): DataType => {
         if (t === 'price' || t === 'size_oz') return DataType.Float;
         if (Object.values(DataType).includes(t as DataType)) return t as DataType;
-        return t;
+        return DataType.String;
     };
 
     const handleSave = () => {

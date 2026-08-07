@@ -6,7 +6,7 @@ import { DataType } from '../types';
 interface InputCellProps {
     value: any;
     onChange: (newValue: any) => void;
-    type?: DataType;
+    type?: string | DataType.String;
     options?: { value: string | number, label: string }[]; // For dropdown type
     placeholder?: string;
     min?: number;
@@ -70,7 +70,12 @@ export default function InputCell({
                 }
                 break;
             case DataType.String:
+                break;
             case DataType.Dropdown:
+                // If the dropdown value is numeric, cast it to a number
+                if (!isNaN(Number(newValue)) && newValue !== '') {
+                    newValue = Number(newValue);
+                }
             default:
                 // No specific validation for string or dropdown value beyond required
                 break;

@@ -11,16 +11,19 @@ import mockData from '../mockdata.json';
 import FormRow from './FormRow';
 import { setLoading, setNotification } from './uiSlice';
 import { DataType } from '../types';
+import { PRIMARY_KEYS } from './dataStructures';
 
 interface FormProps {
     tableName: keyof typeof mockData;
     columns: ColumnDefinition[];
 }
 
-const generateNewRow = (columns: ColumnDefinition[], nextId: number) => {
-    const newRow: any = { id: nextId };
+const generateNewRow = (columns: ColumnDefinition[], tableName: keyof typeof mockData) => {
+    const newRow: any = {};
+    const primaryKey = PRIMARY_KEYS[tableName];
     columns.forEach(col => {
-        if (col.key !== 'id') {
+        // We don't set a value for the primary key column in the form
+        if (col.key !== primaryKey) {
             // Initialize with default values based on type
             switch (col.type) {
                 case DataType.Int:
@@ -48,18 +51,19 @@ const generateNewRow = (columns: ColumnDefinition[], nextId: number) => {
 export default function Form({ tableName, columns }: FormProps) {
     const dispatch: AppDispatch = useDispatch();
     const existingData = useSelector((state: RootState) => state.data[tableName]);
+    const primaryKey = PRIMARY_KEYS[tableName];
 
     const nextId = useMemo(() => {
         if (!existingData || existingData.length === 0) return 1;
-        return Math.max(...existingData.map(item => item.id)) + 1;
+        return Math.max(...existingData.map(item => item[primaryKey])) + 1;
     }, [existingData]);
 
-    const [formRows, setFormRows] = useState([generateNewRow(columns, nextId)]);
+    const [formRows, setFormRows] = useState([generateNewRow(columns, tableName)]);
     const [isHovered, setIsHovered] = useState(false);
 
     const handleAddRow = () => {
         const newId = nextId + formRows.length;
-        setFormRows([...formRows, generateNewRow(columns, newId)]);
+        setFormRows([...formRows, generateNewRow(columns, tableName)]);
     };
 
     const handleUpdateRow = (index: number, updatedData: any) => {
@@ -74,19 +78,19 @@ export default function Form({ tableName, columns }: FormProps) {
             // After removing, recalculate the IDs for the remaining rows to keep them sequential
             const updatedRows = newFormRows.map((row, i) => ({
                 ...row,
-                id: nextId + i
+                [primaryKey]: nextId + i
             }));
             setFormRows(updatedRows);
         } else {
             // If it's the last row, just reset it
-            setFormRows([generateNewRow(columns, nextId)]);
+            setFormRows([generateNewRow(columns, tableName)]);
         }
     };
 
     const handleConfirmRow = async (index: number) => {
         const rowToInsert = formRows[index];
-        // The database will generate the ID, so we don't need the client-side guess.
-        const { id, ...dataToInsert } = rowToInsert;
+        // The database will generate the primary key, so we don't need the client-side guess.
+        const { [primaryKey]: _, ...dataToInsert } = rowToInsert;
 
         dispatch(setLoading(true));
         try {
@@ -112,9 +116,10 @@ export default function Form({ tableName, columns }: FormProps) {
                 <tbody>
                     {formRows.map((rowData, index) => (
                         <FormRow
-                            key={rowData.id}
+                            key={rowData[primaryKey] || index}
                             columns={formColumns}
                             rowData={rowData}
+                            tableName = {tableName}
                             onUpdate={(updatedData) => handleUpdateRow(index, updatedData)}
                             onConfirm={() => handleConfirmRow(index)}
                             onCancel={() => handleRemoveRow(index)}

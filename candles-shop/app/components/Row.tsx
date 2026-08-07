@@ -9,6 +9,7 @@ import { RootState, AppDispatch } from '../store';
 import { deleteRow, updateRowFields, updateCellValue } from '../dataSlice';
 import { deleteItem, update } from '../../api';
 import { setLoading, setNotification } from './uiSlice';
+import { PRIMARY_KEYS } from './dataStructures';
 import mockData from '../mockdata.json';
 
 interface RowProps {
@@ -37,14 +38,18 @@ export default function Row({ tableName, columns, rowIndex }: RowProps) {
         return null; // Don't render if the item has been deleted or doesn't exist.
     }
 
-    const { id } = item;
+    const primaryKey = PRIMARY_KEYS[tableName];
+    const id = item[primaryKey];
 
     const handleDelete = async () => {
         if (window.confirm(`Are you sure you want to delete this item?`)) {
             dispatch(setLoading(true));
             try {
+                console.log("calling api deleteItem")
                 await deleteItem(tableName, id);
+                console.log("calling dataslice deleteRow")
                 dispatch(deleteRow({ tableName, id }));
+                console.log("[Row.tsx] calling setNotification")
                 dispatch(setNotification({ type: 'success', message: 'Item deleted successfully!' }));
             } catch (error: any) {
                 console.error("Failed to delete item:", error);
@@ -85,7 +90,7 @@ export default function Row({ tableName, columns, rowIndex }: RowProps) {
         dispatch(setLoading(true));
         try {
             await update(tableName, id, { [columnKey]: value });
-            dispatch(updateCellValue({ tableName, rowIndex, columnKey, value, id }));
+            dispatch(updateCellValue({ tableName, rowIndex, columnKey, value }));
             setActiveCellEdit(null);
             dispatch(setNotification({ type: 'success', message: 'Cell updated successfully!' }));
         } catch (error: any) {
@@ -118,7 +123,7 @@ export default function Row({ tableName, columns, rowIndex }: RowProps) {
                             options={col.options}
                             isRowEditing={isRowEditing}
                             isCellEditing={activeCellEdit === col.key}
-                            isEditable={col.key !== 'id'}
+                            isEditable={col.key !== primaryKey}
                             onCellEditStart={() => {
                                 if (!isRowEditing) setActiveCellEdit(col.key);
                             }}

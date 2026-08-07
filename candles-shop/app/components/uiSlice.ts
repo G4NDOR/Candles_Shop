@@ -25,6 +25,7 @@ const uiSlice = createSlice({
             state.isLoading = action.payload;
         },
         setNotification: (state, action: PayloadAction<Notification | null>) => {
+            console.log("[uiSlice.ts] setNotification payload", action.payload)
             state.notification = action.payload;
         },
     },

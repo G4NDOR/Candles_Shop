@@ -1,27 +1,23 @@
 'use client';
 
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
 import Form from '../components/Form';
-import Table, { ColumnDefinition } from '../components/Table';
+import Table from '../components/Table';
+import { getTableColumns } from '../components/ColumnDefinitions';
 
 export default function CustomersPage() {
-    const customerColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'ID', type: 'int', width: '50px' },
-        { key: 'first_name', header: 'First Name', type: 'string' },
-        { key: 'last_name', header: 'Last Name', type: 'string' },
-        { key: 'email', header: 'Email', type: 'string' },
-    ];
+    const allData = useSelector((state: RootState) => state.data);
+    const tableName = 'customers';
+    const customerColumns = getTableColumns(tableName, allData);
 
     return (
         <div style={{ padding: '2rem' }}>
             <main>
                 <h1>Customers</h1>
-                <Form tableName="customers" columns={customerColumns} />
-    
+                <Form tableName={tableName} columns={customerColumns} />
                 <h2>Customers List (SELECT, UPDATE, DELETE)</h2>
-                <Table
-                    columns={customerColumns}
-                    tableName="customers"
-                />
+                <Table columns={customerColumns} tableName={tableName} />
             </main>
         </div>
     );

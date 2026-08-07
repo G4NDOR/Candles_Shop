@@ -11,4 +11,20 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
+/**
+ * Helper function to execute parameterized SQL queries.
+ * Returns:
+ * - An array of row objects for SELECT queries (e.g., [ { id: 1, ... } ])
+ * - An OkPacket/ResultSetHeader object for INSERT/UPDATE/DELETE (with insertId, affectedRows)
+ */
+export async function executeQuery<T = any>(query: string, values: any[] = []): Promise<T> {
+    try {
+        const [results] = await pool.query(query, values);
+        return results as T;
+    } catch (error: any) {
+        console.error('[DB Query Error]:', error.message);
+        throw error;
+    }
+}
+
 export default pool;

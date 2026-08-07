@@ -1,25 +1,23 @@
 'use client';
 
-import Table, { ColumnDefinition } from '../components/Table'; // Import ColumnDefinition type
+import { useSelector } from 'react-redux';
+import { RootState } from '../store';
+import Table from '../components/Table';
 import Form from '../components/Form';
+import { getTableColumns } from '../components/ColumnDefinitions';
+
 export default function ScentsPage() {
-    // Define columns for the Table component
-    const scentColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'ID', type: 'int', width: '50px' },
-        { key: 'name', header: 'Scent Name', type: 'string' },
-    ];
+    const allData = useSelector((state: RootState) => state.data);
+    const tableName = 'scents';
+    const scentsColumns = getTableColumns(tableName, allData);
 
     return (
         <div style={{ padding: '2rem' }}>
             <main>
                 <h1>Scents</h1>
-                <Form tableName="scents" columns={scentColumns} />
-    
+                <Form tableName={tableName} columns={scentsColumns} />
                 <h2>Scents List (SELECT, UPDATE, DELETE)</h2>
-                <Table
-                    columns={scentColumns}
-                    tableName="scents"
-                />
+                <Table columns={scentsColumns} tableName={tableName} />
             </main>
         </div>
     );

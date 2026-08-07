@@ -10,14 +10,23 @@ const Notification: React.FC = () => {
     const notification = useSelector((state: RootState) => state.ui.notification);
 
     useEffect(() => {
+        console.log("component mounted")
+        return () => {
+            console.log("component unmounted")
+        };
+    }, []);
+
+
+    useEffect(() => {
         if (notification) {
+            console.log("[Notification.tsx] Notification state change in redux", notification)
             const timer = setTimeout(() => {
                 dispatch(setNotification(null));
             }, 3000); // Auto-hide after 3 seconds
 
             return () => clearTimeout(timer);
         }
-    }, [notification, dispatch]);
+    }, [notification, notification?.message, notification?.type, dispatch]);
 
     if (!notification) return null;
 

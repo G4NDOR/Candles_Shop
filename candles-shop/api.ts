@@ -24,6 +24,11 @@
 
 // Helper for handling fetch responses
 async function handleResponse(response: Response) {
+    console.log("[API] handleResponse response", response)
+
+    if (response.status === 204) {
+        return null;
+    }
     if (!response.ok) {
         // For 204 No Content, we don't expect a JSON body.
         if (response.status === 204) {
@@ -32,6 +37,7 @@ async function handleResponse(response: Response) {
         const error = await response.json();
         throw new Error(error.message || `HTTP error! status: ${response.status}`);
     }
+    
     return response.json();
 }
 
@@ -90,6 +96,7 @@ export const deleteItem = async (tableName: string, id: string | number): Promis
         method: 'DELETE',
     });
     await handleResponse(response);
+    console.log("[API] DELETE response done", response)
 };
 
 /**

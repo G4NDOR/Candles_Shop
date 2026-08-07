@@ -2,6 +2,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import mockData from './mockdata.json';
+import { PRIMARY_KEYS } from './components/dataStructures';
 
 type TableName = keyof typeof mockData;
 
@@ -27,7 +28,16 @@ const dataSlice = createSlice({
          * Replaces the entire data state. Used for initializing or resetting data.
          */
         initializeData: (state, action: PayloadAction<DataState>) => {
-            return action.payload;
+            const normalizedData: DataState = {};
+            for (const key in action.payload) {
+                // Normalize incoming keys (e.g., 'Candles' -> 'candles') to match our app's convention
+                const normalizedKey = key.toLowerCase().replace(/ /g, '-');
+                if (normalizedKey in initialState) {
+                    normalizedData[normalizedKey] = action.payload[key];
+                }
+            }
+            // Ensure all state slices are present, even if not in the payload
+            return { ...initialState, ...normalizedData };
         },
 
         /**
@@ -43,8 +53,9 @@ const dataSlice = createSlice({
          */
         updateRowFields: (state, action: PayloadAction<{ tableName: TableName; id: number | string; updatedFields: any }>) => {
             const { tableName, id, updatedFields } = action.payload;
+            const pk = PRIMARY_KEYS[tableName];
             const tableData = state[tableName];
-            const rowIndex = tableData.findIndex(item => item.id === id);
+            const rowIndex = tableData.findIndex(item => item[pk] === id);
             if (rowIndex !== -1) {
                 tableData[rowIndex] = { ...tableData[rowIndex], ...updatedFields };
             }
@@ -66,7 +77,10 @@ const dataSlice = createSlice({
          */
         deleteRow: (state, action: PayloadAction<{ tableName: TableName; id: number | string }>) => {
             const { tableName, id } = action.payload;
-            state[tableName] = state[tableName].filter(item => item.id !== id);
+            const pk = PRIMARY_KEYS[tableName];
+            console.log("dataslice deleteRow before", state[tableName])
+            state[tableName] = state[tableName].filter(item => item[pk] !== id);
+            console.log("dataslice deleteRow after" , state[tableName])
         },
     },
 });
