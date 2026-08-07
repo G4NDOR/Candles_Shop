@@ -113,7 +113,7 @@ export default function Row({ tableName, columns, rowIndex }: RowProps) {
                         borderBottom: '1px solid #ddd',
                     }}>
                         <Cell
-                            value={isEditing ? editedData[col.key] : item[col.key]}
+                            value={isEditing ? (editedData as any)[col.key] : (item as any)[col.key]}
                             type={col.type}
                             options={col.options}
                             isRowEditing={isRowEditing}
