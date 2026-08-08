@@ -5,6 +5,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "NODE_OPTIONS='--max-old-space-size=1024' RAYON_NUM_THREADS=1 SWC_NUM_WORKERS=1 UV_THREADPOOL_SIZE=1 NEXT_CPU_COUNT=1 next build",
+    "start": "next start -p ${PORT:-60903}",
+    "production": "npx forever start -c \"npm start\" .",
+    "stop_production": "npx forever stopall",
     "lint": "next lint"
   },
   "dependencies": {
