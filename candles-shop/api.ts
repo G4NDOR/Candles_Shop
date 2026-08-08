@@ -47,7 +47,7 @@ async function handleResponse(response: Response) {
  */
 export const fetchAllData = async () => {
     console.log(`[API] GET to /api/data to fetch all initial data.`);
-    const response = await fetch('/api/data');
+    const response = await fetch('/api/data', { cache: 'no-store' });
     return handleResponse(response);
 };
 
