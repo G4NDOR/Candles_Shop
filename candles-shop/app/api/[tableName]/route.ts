@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { executeQuery } from '../../../db';
 import { resolveTableInfo } from '../utils';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     request: Request,
     { params }: { params: { tableName: string } }
