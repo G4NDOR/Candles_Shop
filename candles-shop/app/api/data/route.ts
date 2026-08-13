@@ -1,4 +1,3 @@
-// Path: app/api/data/route.ts
 import { NextResponse } from 'next/server';
 import db from '../../../db';
 
@@ -7,25 +6,25 @@ export const revalidate = 0;
 
 export async function GET() {
     try {
-        const [candles] = await db.query('SELECT * FROM Candles');
-        const [scents] = await db.query('SELECT * FROM Scents');
-        const [sizes] = await db.query('SELECT * FROM Sizes');
-        const [customers] = await db.query('SELECT * FROM Customers');
-        const [employees] = await db.query('SELECT * FROM Employees');
-        const [sales] = await db.query('SELECT * FROM Sales');
-        const [salesItems] = await db.query('SELECT * FROM SalesItems');
-
+const [candlesRes]: any = await db.query('CALL sp_GetCandles();');
+        const [scentsRes]: any = await db.query('CALL sp_GetScents();');
+        const [sizesRes]: any = await db.query('CALL sp_GetSizes();');
+        const [customersRes]: any = await db.query('CALL sp_GetCustomers();');
+        const [employeesRes]: any = await db.query('CALL sp_GetEmployees();');
+        const [salesRes]: any = await db.query('CALL sp_GetSales();');
+        const [salesItemsRes]: any = await db.query('CALL sp_GetSalesItems();');
+        
         return NextResponse.json({
-            candles,
-            scents,
-            sizes,
-            customers,
-            employees,
-            sales,
-            'sales-items': salesItems,
+            candles: candlesRes[0],
+            scents: scentsRes[0],
+            sizes: sizesRes[0],
+            customers: customersRes[0],
+            employees: employeesRes[0],
+            sales: salesRes[0],
+            'sales-items': salesItemsRes[0],
         }, { status: 200 });
-    } catch (error) {
+    } catch (error: any) {
         console.error('[API] Fetching data failed:', error);
-        return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
+        return NextResponse.json({ error: error.message || 'Failed to fetch data' }, { status: 500 });
     }
 }

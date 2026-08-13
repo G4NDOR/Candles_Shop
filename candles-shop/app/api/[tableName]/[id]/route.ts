@@ -4,6 +4,16 @@ import { resolveTableInfo } from '../../utils';
 
 export const dynamic = 'force-dynamic';
 
+const SP_DELETE_MAP: Record<string, string> = {
+    Candles: 'sp_DeleteCandle',
+    Scents: 'sp_DeleteScent',
+    Sizes: 'sp_DeleteSize',
+    Customers: 'sp_DeleteCustomer',
+    Employees: 'sp_DeleteEmployee',
+    Sales: 'sp_DeleteSale',
+    SalesItems: 'sp_DeleteSalesItem',
+};
+
 export async function PUT(
     request: Request,
     { params }: { params: { tableName: string; id: string } }
@@ -17,13 +27,10 @@ export async function PUT(
 
     try {
         let body = await request.json();
-        
-        // Strip out the primary key and 'id' from the body to prevent updating them
         const { [tableInfo.pkColumn]: pkValue, id: genericId, ...updateData } = body;
         body = updateData;
 
         const columnsToUpdate = Object.keys(body);
-
         if (columnsToUpdate.length === 0) {
             return NextResponse.json({ message: 'No valid fields provided for update.' }, { status: 400 });
         }
@@ -34,7 +41,7 @@ export async function PUT(
         const query = `UPDATE ${tableInfo.dbTable} SET ${setClauses} WHERE ${tableInfo.pkColumn} = ?`;
         await executeQuery(query, values);
 
-        return new NextResponse(null, { status: 204 }); // No Content
+        return new NextResponse(null, { status: 204 });
     } catch (error: any) {
         return NextResponse.json({ message: error.message }, { status: 500 });
     }
@@ -52,13 +59,10 @@ export async function DELETE(
     }
 
     try {
-        const query = `DELETE FROM ${tableInfo.dbTable} WHERE ${tableInfo.pkColumn} = ?`;
-        const result: any = await executeQuery(query, [id]);
-
-        if (result.affectedRows === 0) {
-            return NextResponse.json({ message: `Item with ID ${id} not found.` }, { status: 404 });
-        }
-        return new NextResponse(null, { status: 204 }); // No Content
+        const spName = SP_DELETE_MAP[tableInfo.dbTable];
+        await executeQuery(`CALL ${spName}(?);`, [id]);
+        
+        return new NextResponse(null, { status: 204 });
     } catch (error: any) {
         return NextResponse.json({ message: error.message }, { status: 500 });
     }
