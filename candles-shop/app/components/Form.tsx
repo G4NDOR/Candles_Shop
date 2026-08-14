@@ -68,7 +68,7 @@ export default function Form({ tableName, columns }: FormProps) {
 
     const nextId = useMemo(() => {
         if (!existingData || existingData.length === 0) return 1;
-        return Math.max(...existingData.map(item => item[primaryKey])) + 1;
+        return Math.max(...existingData.map((item: any) => item[primaryKey])) + 1;
     }, [existingData, primaryKey]);
 
     const [formRows, setFormRows] = useState(() => [generateNewRow(columns, tableName, candles)]);
@@ -87,7 +87,7 @@ export default function Form({ tableName, columns }: FormProps) {
 
         // When candleId selection changes on sales-items, auto-update unitPrice
         if (
-            (tableName === 'sales-items' || tableName === 'salesItems') &&
+            tableName === 'sales-items' &&
             updatedData.candleId !== previousRow?.candleId
         ) {
             const selectedCandle = candles.find(
