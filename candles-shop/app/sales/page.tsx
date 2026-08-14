@@ -1,39 +1,51 @@
 'use client';
 
-import mockData from '../mockdata.json';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store';
 import Form from '../components/Form';
-import Table, { ColumnDefinition } from '../components/Table';
+import Table from '../components/Table';
+import { getTableColumns } from '../schemaRegistry';
+import { useEffect } from 'react';
+import { setLoading } from '../components/uiSlice';
+import { getTable } from '@/api';
+import { setTableData } from '../dataSlice';
 
 export default function SalesPage() {
-    const saleColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'Sale ID', type: 'int', width: '80px' },
-        { key: 'sale_date', header: 'Timestamp', type: 'date' },
-        {
-            key: 'customer_id', header: 'Customer', type: 'dropdown',
-            options: mockData.customers.map(c => ({
-                value: c.id, label: `${c.first_name} ${c.last_name}`
-            }))
-        },
-        {
-            key: 'employee_id', header: 'Employee', type: 'dropdown',
-            options: mockData.employees.map(e => ({
-                value: e.id, label: `${e.first_name} ${e.last_name}`
-            }))
-        },
-        { key: 'total_amount', header: 'Total', type: 'price' },
-    ];
+    const dispatch: AppDispatch = useDispatch();
+    const allData = useSelector((state: RootState) => state.data);
+    const tableName = 'sales';
+    const salesColumns = getTableColumns(tableName, allData);
+
+    // Get current active table & loading state from Redux
+    const currentTable = useSelector((state: RootState) => state.data.currentTable);
+
+    useEffect(() => {
+        // Guard clause: Ensure currentTable is ready
+        if (!currentTable) return;
+
+        async function loadTableData() {
+            dispatch(setLoading(true));
+            try {
+                // Fetch dynamically using currentTable
+                const data = await getTable(currentTable);
+                dispatch(setTableData({ tableName: currentTable, data }));
+            } catch (error) {
+                console.error(`Failed to fetch ${currentTable}:`, error);
+            } finally {
+                dispatch(setLoading(false));
+            }
+        }
+
+        loadTableData();
+    }, [currentTable, dispatch]);
 
     return (
         <div style={{ padding: '2rem' }}>
             <main>
                 <h1>Sales</h1>
-                <Form tableName="sales" columns={saleColumns} />
-    
+                <Form tableName={tableName} columns={salesColumns} />
                 <h2>Sales List (SELECT, UPDATE, DELETE)</h2>
-                <Table
-                    columns={saleColumns}
-                    tableName="sales"
-                />
+                <Table columns={salesColumns} tableName={tableName} />
             </main>
         </div>
     );

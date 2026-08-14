@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, ChangeEvent } from 'react';
+import { DataType } from '../schemaRegistry';
 
 interface InputCellProps {
     value: any;
     onChange: (newValue: any) => void;
-    type?: 'string' | 'int' | 'float' | 'date' | 'dropdown';
+    type?: string | DataType.String;
     options?: { value: string | number, label: string }[]; // For dropdown type
     placeholder?: string;
     min?: number;
@@ -17,7 +18,7 @@ interface InputCellProps {
 export default function InputCell({
     value,
     onChange,
-    type = 'string',
+    type = DataType.String,
     options,
     placeholder,
     min,
@@ -30,6 +31,7 @@ export default function InputCell({
 
     // Update internal state when external value prop changes
     useEffect(() => {
+        console.log("value changed on ", ", value: ", value)
         setInputValue(value);
     }, [value]);
 
@@ -38,27 +40,27 @@ export default function InputCell({
         let currentIsValid = true;
 
         switch (type) {
-            case 'int':
+            case DataType.Int:
                 const intValue = parseInt(newValue, 10);
                 if (isNaN(intValue) && newValue !== '') { // Allow empty string for clearing
                     currentIsValid = false;
                 } else {
                     newValue = isNaN(intValue) ? '' : intValue;
-                    if (min !== undefined && newValue < min) currentIsValid = false;
-                    if (max !== undefined && newValue > max) currentIsValid = false;
+                    if (min !== undefined && newValue !== '' && newValue < min) currentIsValid = false;
+                    if (max !== undefined && newValue !== '' && newValue > max) currentIsValid = false;
                 }
                 break;
-            case 'float':
+            case DataType.Float:
                 const floatValue = parseFloat(newValue);
                 if (isNaN(floatValue) && newValue !== '') { // Allow empty string for clearing
                     currentIsValid = false;
                 } else {
                     newValue = isNaN(floatValue) ? '' : parseFloat(floatValue.toFixed(2)); // Store as number, format on display if needed
-                    if (min !== undefined && newValue < min) currentIsValid = false;
-                    if (max !== undefined && newValue > max) currentIsValid = false;
+                    if (min !== undefined && newValue !== '' && newValue < min) currentIsValid = false;
+                    if (max !== undefined && newValue !== '' && newValue > max) currentIsValid = false;
                 }
                 break;
-            case 'date':
+            case DataType.Date:
                 // HTML input type="date" handles basic validation.
                 // We just ensure it's a valid date string or empty.
                 if (newValue && !isNaN(new Date(newValue).getTime())) {
@@ -68,8 +70,18 @@ export default function InputCell({
                     currentIsValid = false;
                 }
                 break;
-            case 'string':
-            case 'dropdown':
+            case DataType.String:
+                break;
+            case DataType.Dropdown:
+                // If the dropdown value is numeric, cast it to a number
+                if (!isNaN(Number(newValue)) && newValue !== '') {
+                    newValue = Number(newValue);
+                }
+            case DataType.Bool:
+                if (!isNaN(Number(newValue)) && newValue !== '') {
+                    console.log("Bool setting value to number ", newValue)
+                    newValue = Number(newValue);
+                }
             default:
                 // No specific validation for string or dropdown value beyond required
                 break;
@@ -96,7 +108,7 @@ export default function InputCell({
     };
 
     switch (type) {
-        case 'dropdown':
+        case DataType.Dropdown:
             if (!options) {
                 console.warn("InputCell: 'options' prop is required for type 'dropdown'.");
                 return <span style={{ color: 'red' }}>Error: Dropdown options missing.</span>;
@@ -116,7 +128,33 @@ export default function InputCell({
                     ))}
                 </select>
             );
-        case 'date':
+        case DataType.Bool:
+            let boolOptions = [
+                {
+                    value: 1,
+                    label: 'Yes'
+                },
+                {
+                    value: 0,
+                    label: 'No'
+                }
+            ]
+            return (
+                <select
+                    value={inputValue}
+                    onChange={handleChange}
+                    style={baseStyle}
+                    required={required}
+                >
+                    {placeholder && <option value="" disabled={required}>{placeholder}</option>}
+                    {boolOptions.map((option, index) => (
+                        <option key={index} value={option.value}>
+                            {option.label}
+                        </option>
+                    ))}
+                </select>
+            );
+        case DataType.Date:
             // Format date value to YYYY-MM-DD for input type="date"
             const formattedDateValue = inputValue instanceof Date
                 ? inputValue.toISOString().split('T')[0]
@@ -132,7 +170,7 @@ export default function InputCell({
                     required={required}
                 />
             );
-        case 'int':
+        case DataType.Int:
             return (
                 <input
                     type="number"
@@ -146,7 +184,7 @@ export default function InputCell({
                     required={required}
                 />
             );
-        case 'float':
+        case DataType.Float:
             return (
                 <input
                     type="number"
@@ -160,7 +198,7 @@ export default function InputCell({
                     required={required}
                 />
             );
-        case 'string':
+        case DataType.String:
         default:
             return (
                 <input

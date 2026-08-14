@@ -1,35 +1,54 @@
 'use client';
 
-import mockData from '../mockdata.json';
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store';
 import Form from '../components/Form';
-import Table, { ColumnDefinition } from '../components/Table';
+import Table from '../components/Table';
+import { useEffect } from 'react';
+import { getTable } from '@/api';
+import { setTableData } from '../dataSlice';
+import { setLoading } from '../components/uiSlice';
+import { getTableColumns } from '../schemaRegistry';
 
 export default function CandlesPage() {
-    const candleColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'ID', type: 'int', width: '50px' },
-        { key: 'name', header: 'Name', type: 'string' },
-        {
-            key: 'scent_id', header: 'Scent', type: 'dropdown',
-            options: mockData.scents.map(s => ({ value: s.id, label: s.name }))
-        },
-        {
-            key: 'size_id', header: 'Size', type: 'dropdown',
-            options: mockData.sizes.map(s => ({ value: s.id, label: s.name }))
-        },
-        { key: 'price', header: 'Price', type: 'price' },
-        { key: 'stock_quantity', header: 'Stock', type: 'int' },
-    ];
+    const dispatch: AppDispatch = useDispatch();
+    const allData = useSelector((state: RootState) => state.data);
+    const tableName = 'candles';
+    const candleColumns = getTableColumns(tableName, allData);
+
+    // Get current active table & loading state from Redux
+    const currentTable = useSelector((state: RootState) => state.data.currentTable);
+
+    useEffect(() => {
+        // Guard clause: Ensure currentTable is ready
+        if (!currentTable) return;
+
+        async function loadTableData() {
+            dispatch(setLoading(true));
+            try {
+                // Fetch dynamically using currentTable
+                const data = await getTable(currentTable);
+                dispatch(setTableData({ tableName: currentTable, data }));
+            } catch (error) {
+                console.error(`Failed to fetch ${currentTable}:`, error);
+            } finally {
+                dispatch(setLoading(false));
+            }
+        }
+
+        loadTableData();
+    }, [currentTable, dispatch]);
 
     return (
         <div style={{ padding: '2rem' }}>
             <main>
                 <h1>Candles</h1>
-                <Form tableName="candles" columns={candleColumns} />
+                <Form tableName={tableName} columns={candleColumns} />
     
                 <h2>Candles List (SELECT, UPDATE, DELETE)</h2>
                 <Table
                     columns={candleColumns}
-                    tableName="candles"
+                    tableName={tableName}
                 />
             </main>
         </div>

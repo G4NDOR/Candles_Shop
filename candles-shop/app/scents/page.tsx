@@ -1,25 +1,51 @@
 'use client';
 
-import Table, { ColumnDefinition } from '../components/Table'; // Import ColumnDefinition type
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store';
+import Table from '../components/Table';
 import Form from '../components/Form';
+import { useEffect } from 'react';
+import { setLoading } from '../components/uiSlice';
+import { getTable } from '@/api';
+import { setTableData } from '../dataSlice';
+import { getTableColumns } from '../schemaRegistry';
+
 export default function ScentsPage() {
-    // Define columns for the Table component
-    const scentColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'ID', type: 'int', width: '50px' },
-        { key: 'name', header: 'Scent Name', type: 'string' },
-    ];
+    const dispatch: AppDispatch = useDispatch();
+    const allData = useSelector((state: RootState) => state.data);
+    const tableName = 'scents';
+    const scentsColumns = getTableColumns(tableName, allData);
+
+    // Get current active table & loading state from Redux
+    const currentTable = useSelector((state: RootState) => state.data.currentTable);
+
+    useEffect(() => {
+        // Guard clause: Ensure currentTable is ready
+        if (!currentTable) return;
+
+        async function loadTableData() {
+            dispatch(setLoading(true));
+            try {
+                // Fetch dynamically using currentTable
+                const data = await getTable(currentTable);
+                dispatch(setTableData({ tableName: currentTable, data }));
+            } catch (error) {
+                console.error(`Failed to fetch ${currentTable}:`, error);
+            } finally {
+                dispatch(setLoading(false));
+            }
+        }
+
+        loadTableData();
+    }, [currentTable, dispatch]);
 
     return (
         <div style={{ padding: '2rem' }}>
             <main>
                 <h1>Scents</h1>
-                <Form tableName="scents" columns={scentColumns} />
-    
+                <Form tableName={tableName} columns={scentsColumns} />
                 <h2>Scents List (SELECT, UPDATE, DELETE)</h2>
-                <Table
-                    columns={scentColumns}
-                    tableName="scents"
-                />
+                <Table columns={scentsColumns} tableName={tableName} />
             </main>
         </div>
     );

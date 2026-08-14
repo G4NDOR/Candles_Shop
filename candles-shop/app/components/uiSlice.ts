@@ -2,17 +2,17 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface Notification {
-    message: string;
+export interface Notification {
     type: 'success' | 'error';
+    message: string;
 }
 
-interface UiState {
+interface UIState {
     isLoading: boolean;
     notification: Notification | null;
 }
 
-const initialState: UiState = {
+const initialState: UIState = {
     isLoading: false,
     notification: null,
 };
@@ -25,6 +25,7 @@ const uiSlice = createSlice({
             state.isLoading = action.payload;
         },
         setNotification: (state, action: PayloadAction<Notification | null>) => {
+            console.log("[uiSlice.ts] setNotification payload", action.payload)
             state.notification = action.payload;
         },
     },

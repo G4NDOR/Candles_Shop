@@ -1,7 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import React from 'react';
+import { usePathname } from 'next/navigation';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { resolveTableInfo } from '../schemaRegistry';
+import { setCurrentTable } from '../dataSlice';
 
 const navLinks = [
     { href: '/scents', label: 'Scents' },
@@ -14,6 +18,17 @@ const navLinks = [
 ];
 
 const Navbar = () => {
+    const pathname = usePathname();
+    const dispatch = useDispatch();
+
+    // Automatically sync Redux `currentTable` whenever the route/URL changes!
+    useEffect(() => {
+        const cleanPath = pathname.replace('/', '');
+        const tableInfo = resolveTableInfo(cleanPath);
+        if (tableInfo) {
+            dispatch(setCurrentTable(tableInfo.feKey));
+        }
+    }, [pathname, dispatch]);
     const navStyle: React.CSSProperties = {
         backgroundColor: '#ffffff',
         padding: '0 2rem',

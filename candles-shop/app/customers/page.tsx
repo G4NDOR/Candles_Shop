@@ -1,27 +1,51 @@
 'use client';
 
+import { useDispatch, useSelector } from 'react-redux';
+import { AppDispatch, RootState } from '../store';
 import Form from '../components/Form';
-import Table, { ColumnDefinition } from '../components/Table';
+import Table from '../components/Table';
+import { getTableColumns } from '../schemaRegistry';
+import { useEffect } from 'react';
+import { setLoading } from '../components/uiSlice';
+import { getTable } from '@/api';
+import { setTableData } from '../dataSlice';
 
 export default function CustomersPage() {
-    const customerColumns: ColumnDefinition[] = [
-        { key: 'id', header: 'ID', type: 'int', width: '50px' },
-        { key: 'first_name', header: 'First Name', type: 'string' },
-        { key: 'last_name', header: 'Last Name', type: 'string' },
-        { key: 'email', header: 'Email', type: 'string' },
-    ];
+    const dispatch: AppDispatch = useDispatch();
+    const allData = useSelector((state: RootState) => state.data);
+    const tableName = 'customers';
+    const customerColumns = getTableColumns(tableName, allData);
+
+    // Get current active table & loading state from Redux
+    const currentTable = useSelector((state: RootState) => state.data.currentTable);
+
+    useEffect(() => {
+        // Guard clause: Ensure currentTable is ready
+        if (!currentTable) return;
+
+        async function loadTableData() {
+            dispatch(setLoading(true));
+            try {
+                // Fetch dynamically using currentTable
+                const data = await getTable(currentTable);
+                dispatch(setTableData({ tableName: currentTable, data }));
+            } catch (error) {
+                console.error(`Failed to fetch ${currentTable}:`, error);
+            } finally {
+                dispatch(setLoading(false));
+            }
+        }
+
+        loadTableData();
+    }, [currentTable, dispatch]);
 
     return (
         <div style={{ padding: '2rem' }}>
             <main>
                 <h1>Customers</h1>
-                <Form tableName="customers" columns={customerColumns} />
-    
+                <Form tableName={tableName} columns={customerColumns} />
                 <h2>Customers List (SELECT, UPDATE, DELETE)</h2>
-                <Table
-                    columns={customerColumns}
-                    tableName="customers"
-                />
+                <Table columns={customerColumns} tableName={tableName} />
             </main>
         </div>
     );

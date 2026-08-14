@@ -1,64 +1,103 @@
+'use client';
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import mockData from './mockdata.json';
+import { PRIMARY_KEYS, resolveTableInfo } from './schemaRegistry';
 
-interface UpdateCellPayload {
-    tableName: keyof typeof mockData;
-    rowIndex: number;
-    columnKey: string;
-    id: string | number; // Added id to potentially find by id if rowIndex is unreliable
-    value: any;
+type TableName = keyof typeof mockData;
+
+interface DataState {
+    currentTable: string;
+    [key: string]: any;
 }
 
-interface InsertRowPayload {
-    tableName: keyof typeof mockData;
-    row: any;
-}
-
-interface DeleteRowPayload {
-    tableName: keyof typeof mockData;
-    id: string | number;
-}
-
-interface UpdateRowFieldsPayload extends DeleteRowPayload {
-    updatedFields: Partial<any>;
-}
-
-const initialState: typeof mockData = mockData;
+const initialState: DataState = {
+    currentTable: 'candles', // Default fallback
+    candles: [],
+    customers: [],
+    employees: [],
+    sales: [],
+    'sales-items': [],
+    sizes: [],
+    scents: [],
+};
 
 const dataSlice = createSlice({
     name: 'data',
     initialState,
     reducers: {
-        updateCellValue: (state, action: PayloadAction<UpdateCellPayload>) => {
-            const { tableName, rowIndex, columnKey, value } = action.payload;
-            // Ensure the table and row exist before attempting to update
-            if (state[tableName] && state[tableName][rowIndex]) {
-                (state[tableName][rowIndex] as any)[columnKey] = value;
+        // Replaces the whole store (Initial Load / Reset)
+        initializeData: (state, action: PayloadAction<DataState>) => {
+            const normalizedData: DataState = { currentTable: state.currentTable };
+            for (const key in action.payload) {
+                const normalizedKey = key.toLowerCase().replace(/ /g, '-');
+                if (normalizedKey in initialState) {
+                    normalizedData[normalizedKey] = action.payload[key];
+                }
+            }
+            return { ...initialState, ...normalizedData };
+        },
+
+        setCurrentTable: (state, action: PayloadAction<string>) => {
+            const tableInfo = resolveTableInfo(action.payload);
+            state.currentTable = tableInfo?.feKey || action.payload;
+        },
+
+        // ✅ NEW: Replaces a SINGLE table's data (Just like initializeData!)
+        setTableData: (state, action: PayloadAction<{ tableName: string; data: any[] }>) => {
+            const { tableName, data } = action.payload;
+            const tableInfo = resolveTableInfo(tableName);
+            const targetKey = tableInfo?.feKey || tableName;
+
+            if (targetKey in state) {
+                state[targetKey] = data;
             }
         },
-        insertRow: (state, action: PayloadAction<InsertRowPayload>) => {
+
+        insertRow: (state, action: PayloadAction<{ tableName: TableName; row: any }>) => {
             const { tableName, row } = action.payload;
             if (state[tableName]) {
-                (state[tableName] as any[]).push(row);
+                state[tableName].push(row);
             }
         },
-        deleteRow: (state, action: PayloadAction<DeleteRowPayload>) => {
-            const { tableName, id } = action.payload;
-            if (state[tableName]) {
-                (state[tableName] as any[]) = (state[tableName] as any[]).filter(item => item.id !== id);
-            }
-        },
-        updateRowFields: (state, action: PayloadAction<UpdateRowFieldsPayload>) => {
+
+        updateRowFields: (state, action: PayloadAction<{ tableName: TableName; id: number | string; updatedFields: any }>) => {
             const { tableName, id, updatedFields } = action.payload;
-            if (state[tableName]) {
-                const index = (state[tableName] as any[]).findIndex(item => item.id === id);
-                if (index !== -1) {
-                    (state[tableName] as any[])[index] = { ...state[tableName][index], ...updatedFields };
+            const pk = PRIMARY_KEYS[tableName] || resolveTableInfo(tableName)?.pkColumn || 'id';
+            const tableData = state[tableName];
+            if (tableData) {
+                const rowIndex = tableData.findIndex((item: any) => item[pk] === id);
+                if (rowIndex !== -1) {
+                    tableData[rowIndex] = { ...tableData[rowIndex], ...updatedFields };
                 }
+            }
+        },
+
+        updateCellValue: (state, action: PayloadAction<{ tableName: TableName; rowIndex: number; columnKey: string; value: any }>) => {
+            const { tableName, rowIndex, columnKey, value } = action.payload;
+            if (state[tableName] && state[tableName][rowIndex]) {
+                state[tableName][rowIndex][columnKey] = value;
+            }
+        },
+
+        deleteRow: (state, action: PayloadAction<{ tableName: TableName; id: number | string }>) => {
+            const { tableName, id } = action.payload;
+            const pk = PRIMARY_KEYS[tableName] || resolveTableInfo(tableName)?.pkColumn || 'id';
+            if (state[tableName]) {
+                state[tableName] = state[tableName].filter((item: any) => item[pk] !== id);
             }
         },
     },
 });
 
-export const { updateCellValue, insertRow, deleteRow, updateRowFields } = dataSlice.actions;
+export const {
+    initializeData,
+    setCurrentTable,
+    setTableData,
+    insertRow,
+    updateRowFields,
+    updateCellValue,
+    deleteRow,
+} = dataSlice.actions;
+
 export default dataSlice.reducer;
