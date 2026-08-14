@@ -166,3 +166,71 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+
+
+
+-- =====================================================
+-- TRIGGERS TO AUTO-UPDATE Sales.totalAmount
+-- =====================================================
+DELIMITER $$
+
+-- 1. After Insert on SalesItems
+DROP TRIGGER IF EXISTS `trg_after_salesitems_insert`$$
+CREATE TRIGGER `trg_after_salesitems_insert`
+AFTER INSERT ON `SalesItems`
+FOR EACH ROW
+BEGIN
+    UPDATE `Sales`
+    SET `totalAmount` = (
+        SELECT IFNULL(SUM(`quantity` * `unitPrice`), 0.00)
+        FROM `SalesItems`
+        WHERE `saleId` = NEW.`saleId`
+    )
+    WHERE `saleId` = NEW.`saleId`;
+END$$
+
+-- 2. After Update on SalesItems
+DROP TRIGGER IF EXISTS `trg_after_salesitems_update`$$
+CREATE TRIGGER `trg_after_salesitems_update`
+AFTER UPDATE ON `SalesItems`
+FOR EACH ROW
+BEGIN
+    -- Update total for current saleId
+    UPDATE `Sales`
+    SET `totalAmount` = (
+        SELECT IFNULL(SUM(`quantity` * `unitPrice`), 0.00)
+        FROM `SalesItems`
+        WHERE `saleId` = NEW.`saleId`
+    )
+    WHERE `saleId` = NEW.`saleId`;
+
+    -- If saleId itself was reassigned to another sale, recalculate old saleId as well
+    IF OLD.`saleId` <> NEW.`saleId` THEN
+        UPDATE `Sales`
+        SET `totalAmount` = (
+            SELECT IFNULL(SUM(`quantity` * `unitPrice`), 0.00)
+            FROM `SalesItems`
+            WHERE `saleId` = OLD.`saleId`
+        )
+        WHERE `saleId` = OLD.`saleId`;
+    END IF;
+END$$
+
+-- 3. After Delete on SalesItems
+DROP TRIGGER IF EXISTS `trg_after_salesitems_delete`$$
+CREATE TRIGGER `trg_after_salesitems_delete`
+AFTER DELETE ON `SalesItems`
+FOR EACH ROW
+BEGIN
+    UPDATE `Sales`
+    SET `totalAmount` = (
+        SELECT IFNULL(SUM(`quantity` * `unitPrice`), 0.00)
+        FROM `SalesItems`
+        WHERE `saleId` = OLD.`saleId`
+    )
+    WHERE `saleId` = OLD.`saleId`;
+END$$
+
+DELIMITER ;
