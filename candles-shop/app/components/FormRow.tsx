@@ -3,7 +3,7 @@
 import React from 'react';
 import { ColumnDefinition } from './Table';
 import InputCell from './Input';
-import { PRIMARY_KEYS } from './dataStructures';
+import { PRIMARY_KEYS } from '../schemaRegistry';
 import mockData from '../mockdata.json';
 
 interface FormRowProps {

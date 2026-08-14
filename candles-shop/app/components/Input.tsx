@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, ChangeEvent } from 'react';
-import { DataType } from '../types';
+import { DataType } from '../schemaRegistry';
 
 interface InputCellProps {
     value: any;
@@ -31,6 +31,7 @@ export default function InputCell({
 
     // Update internal state when external value prop changes
     useEffect(() => {
+        console.log("value changed on ", ", value: ", value)
         setInputValue(value);
     }, [value]);
 

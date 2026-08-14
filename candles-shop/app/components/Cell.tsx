@@ -2,7 +2,7 @@
 
 // app/components/Cell.tsx
 import React, { useState, useEffect } from 'react';
-import { DataType } from '../types';
+import { DataType } from '../schemaRegistry';
 import { ColumnType } from './Table';
 import InputCell from './Input';
 

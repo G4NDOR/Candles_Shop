@@ -9,8 +9,8 @@ import { RootState, AppDispatch } from '../store';
 import { deleteRow, updateRowFields, updateCellValue } from '../dataSlice';
 import { deleteItem, update } from '../../api';
 import { setLoading, setNotification } from './uiSlice';
-import { PRIMARY_KEYS } from './dataStructures';
 import mockData from '../mockdata.json';
+import { PRIMARY_KEYS } from '../schemaRegistry';
 
 interface RowProps {
     tableName: keyof typeof mockData; // The key for the data array in the Redux store

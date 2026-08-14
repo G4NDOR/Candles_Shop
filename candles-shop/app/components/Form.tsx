@@ -1,33 +1,31 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../store';
 import { ColumnDefinition } from './Table';
-import TableHeader from './TableHeader'; // Make sure this import is correct
+import TableHeader from './TableHeader';
 import { insertRow } from '../dataSlice';
 import { insert } from '../../api';
 import mockData from '../mockdata.json';
 import FormRow from './FormRow';
 import { setLoading, setNotification } from './uiSlice';
-import { DataType } from '../types';
-import { PRIMARY_KEYS } from './dataStructures';
+import { DataType, PRIMARY_KEYS } from '../schemaRegistry';
 
 interface FormProps {
     tableName: keyof typeof mockData;
     columns: ColumnDefinition[];
 }
 
-const generateNewRow = (columns: ColumnDefinition[], tableName: keyof typeof mockData) => {
+const generateNewRow = (columns: ColumnDefinition[], tableName: string, candles: any[] = []) => {
     const newRow: any = {};
     const primaryKey = PRIMARY_KEYS[tableName];
+
     columns.forEach(col => {
-        // We don't set a value for the primary key column in the form
         if (col.key !== primaryKey) {
-            // Initialize with default values based on type
             switch (col.type) {
                 case DataType.Int:
-                    newRow[col.key] = 0;
+                    newRow[col.key] = col.key === 'quantity' ? 1 : 0;
                     break;
                 case DataType.Float:
                 case 'price':
@@ -48,28 +46,58 @@ const generateNewRow = (columns: ColumnDefinition[], tableName: keyof typeof moc
             }
         }
     });
+
+    // Automatically initialize unitPrice to selected candle's price for sales-items
+    if ((tableName === 'sales-items' || tableName === 'salesItems') && newRow.candleId) {
+        const selectedCandle = candles.find((c: any) => Number(c.candleId) === Number(newRow.candleId));
+        if (selectedCandle) {
+            newRow.unitPrice = Number(selectedCandle.price);
+        }
+    }
+
     return newRow;
 };
 
 export default function Form({ tableName, columns }: FormProps) {
     const dispatch: AppDispatch = useDispatch();
+    const allData = useSelector((state: RootState) => state.data);
     const existingData = useSelector((state: RootState) => state.data[tableName]);
     const primaryKey = PRIMARY_KEYS[tableName];
+
+    const candles = useMemo(() => allData.candles || [], [allData.candles]);
 
     const nextId = useMemo(() => {
         if (!existingData || existingData.length === 0) return 1;
         return Math.max(...existingData.map(item => item[primaryKey])) + 1;
-    }, [existingData]);
+    }, [existingData, primaryKey]);
 
-    const [formRows, setFormRows] = useState([generateNewRow(columns, tableName)]);
+    const [formRows, setFormRows] = useState(() => [generateNewRow(columns, tableName, candles)]);
     const [isHovered, setIsHovered] = useState(false);
 
+    useEffect(() => {
+        setFormRows([generateNewRow(columns, tableName, candles)]);
+    }, [columns, tableName, candles]);
+
     const handleAddRow = () => {
-        const newId = nextId + formRows.length;
-        setFormRows([...formRows, generateNewRow(columns, tableName)]);
+        setFormRows([...formRows, generateNewRow(columns, tableName, candles)]);
     };
 
     const handleUpdateRow = (index: number, updatedData: any) => {
+        const previousRow = formRows[index];
+
+        // When candleId selection changes on sales-items, auto-update unitPrice
+        if (
+            (tableName === 'sales-items' || tableName === 'salesItems') &&
+            updatedData.candleId !== previousRow?.candleId
+        ) {
+            const selectedCandle = candles.find(
+                (c: any) => Number(c.candleId) === Number(updatedData.candleId)
+            );
+            if (selectedCandle) {
+                updatedData.unitPrice = Number(selectedCandle.price);
+            }
+        }
+
         const newFormRows = [...formRows];
         newFormRows[index] = updatedData;
         setFormRows(newFormRows);
@@ -78,29 +106,25 @@ export default function Form({ tableName, columns }: FormProps) {
     const handleRemoveRow = (index: number) => {
         if (formRows.length > 1) {
             const newFormRows = formRows.filter((_, i) => i !== index);
-            // After removing, recalculate the IDs for the remaining rows to keep them sequential
             const updatedRows = newFormRows.map((row, i) => ({
                 ...row,
-                [primaryKey]: nextId + i
+                [primaryKey]: nextId + i,
             }));
             setFormRows(updatedRows);
         } else {
-            // If it's the last row, just reset it
-            setFormRows([generateNewRow(columns, tableName)]);
+            setFormRows([generateNewRow(columns, tableName, candles)]);
         }
     };
 
     const handleConfirmRow = async (index: number) => {
         const rowToInsert = formRows[index];
-        // The database will generate the primary key, so we don't need the client-side guess.
-        const { [primaryKey]: _, ...dataToInsert } = rowToInsert;
+        const { [primaryKey]: _, createdDate, saleTimestamp, ...dataToInsert } = rowToInsert;
 
         dispatch(setLoading(true));
         try {
-            // The `insert` function now returns the complete row from the database, including the real ID.
             const newRowFromDb = await insert(tableName, dataToInsert);
             dispatch(insertRow({ tableName, row: newRowFromDb }));
-            handleRemoveRow(index); // Remove the row from the form after it's successfully saved.
+            handleRemoveRow(index);
             dispatch(setNotification({ type: 'success', message: 'Item added successfully!' }));
         } catch (error: any) {
             console.error("Failed to insert row:", error);
@@ -122,7 +146,7 @@ export default function Form({ tableName, columns }: FormProps) {
                             key={rowData[primaryKey] || index}
                             columns={formColumns}
                             rowData={rowData}
-                            tableName = {tableName}
+                            tableName={tableName}
                             onUpdate={(updatedData) => handleUpdateRow(index, updatedData)}
                             onConfirm={() => handleConfirmRow(index)}
                             onCancel={() => handleRemoveRow(index)}

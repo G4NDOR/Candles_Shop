@@ -8,6 +8,8 @@ export interface TableConfig {
     /** Human-readable display label for UI headers (e.g., 'Sales Items') */
     displayName: string;
     /** Primary key column name in DB/JSON (e.g., 'saleItemId') */
+    path: string;            // path
+    description: string;     // description
     pkColumn: string;
     /** Stored procedure names */
     spGet: string;
@@ -28,6 +30,8 @@ export const TABLE_REGISTRY: Record<string, TableConfig> = {
         dbTable: 'Scents',
         displayName: 'Scents',
         pkColumn: 'scentId',
+        path: '/scents',
+        description: 'Manage candle scent descriptions and details.',
         spGet: 'sp_GetScents',
         spInsert: 'sp_InsertScent',
         spDelete: 'sp_DeleteScent',
@@ -42,6 +46,8 @@ export const TABLE_REGISTRY: Record<string, TableConfig> = {
         dbTable: 'Sizes',
         displayName: 'Sizes',
         pkColumn: 'sizeId',
+        path: '/sizes',
+        description: 'Manage candle size categories and fluid volume.',
         spGet: 'sp_GetSizes',
         spInsert: 'sp_InsertSize',
         spDelete: 'sp_DeleteSize',
@@ -56,6 +62,8 @@ export const TABLE_REGISTRY: Record<string, TableConfig> = {
         dbTable: 'Employees',
         displayName: 'Employees',
         pkColumn: 'employeeId',
+        path: '/employees',
+        description: 'Manage shop staff profiles and employment status.',
         spGet: 'sp_GetEmployees',
         spInsert: 'sp_InsertEmployee',
         spDelete: 'sp_DeleteEmployee',
@@ -71,6 +79,8 @@ export const TABLE_REGISTRY: Record<string, TableConfig> = {
         dbTable: 'Customers',
         displayName: 'Customers',
         pkColumn: 'customerId',
+        path: '/customers',
+        description: 'View customer accounts and contact information.',
         spGet: 'sp_GetCustomers',
         spInsert: 'sp_InsertCustomer',
         spDelete: 'sp_DeleteCustomer',
@@ -95,6 +105,8 @@ export const TABLE_REGISTRY: Record<string, TableConfig> = {
         dbTable: 'Candles',
         displayName: 'Candles',
         pkColumn: 'candleId',
+        path: '/candles',
+        description: 'Browse, create, update, and delete candle inventory.',
         spGet: 'sp_GetCandles',
         spInsert: 'sp_InsertCandle',
         spDelete: 'sp_DeleteCandle',
@@ -117,6 +129,8 @@ export const TABLE_REGISTRY: Record<string, TableConfig> = {
         dbTable: 'Sales',
         displayName: 'Sales',
         pkColumn: 'saleId',
+        path: '/sales',
+        description: 'Track sales orders, dates, customer links, and order totals.',
         spGet: 'sp_GetSales',
         spInsert: 'sp_InsertSale',
         spDelete: 'sp_DeleteSale',
@@ -139,6 +153,8 @@ export const TABLE_REGISTRY: Record<string, TableConfig> = {
         dbTable: 'SalesItems',
         displayName: 'Sales Items',
         pkColumn: 'saleItemId',
+        path: '/sales-items',
+        description: 'Manage line items connecting sales transactions to candles.',
         spGet: 'sp_GetSalesItems',
         spInsert: 'sp_InsertSalesItem',
         spDelete: 'sp_DeleteSalesItem',
@@ -225,3 +241,14 @@ export const SP_DELETE_MAP = Object.values(TABLE_REGISTRY).reduce((acc, t) => {
     acc[t.feKey] = t.spDelete;
     return acc;
 }, {} as Record<string, string>);
+
+export const NAV_ITEMS = Object.values(TABLE_REGISTRY);
+
+export enum DataType {
+    String = 'string',
+    Int = 'int',
+    Float = 'float',
+    Date = 'date',
+    Dropdown = 'dropdown',
+    Bool = 'bool'
+}

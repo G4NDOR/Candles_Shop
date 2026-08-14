@@ -5,7 +5,7 @@ import Row from './Row'; // Import Row component
 import TableHeader from './TableHeader'; // Import TableHeader component
 import { RootState } from '../store';
 import mockData from '../mockdata.json';
-import { DataType } from '../types';
+import { DataType } from '../schemaRegistry';
 
 export type ColumnType = DataType | 'price' | 'size_oz' | string;
 

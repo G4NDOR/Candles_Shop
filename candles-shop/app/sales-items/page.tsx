@@ -4,10 +4,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '../store';
 import Form from '../components/Form';
 import Table from '../components/Table';
-import { getTableColumns } from '../components/ColumnDefinitions';
 import { useEffect } from 'react';
 import { getTable } from '@/api';
 import { setTableData } from '../dataSlice';
+import { getTableColumns } from '../schemaRegistry';
+import { setLoading } from '../components/uiSlice';
 
 export default function SalesItemsPage() {
     const dispatch: AppDispatch = useDispatch();
@@ -15,21 +16,28 @@ export default function SalesItemsPage() {
     const tableName = 'sales-items';
     const salesItemsColumns = getTableColumns(tableName, allData);
 
+    // Get current active table & loading state from Redux
+    const currentTable = useSelector((state: RootState) => state.data.currentTable);
+
     useEffect(() => {
-        async function loadCandles() {
+        // Guard clause: Ensure currentTable is ready
+        if (!currentTable) return;
+
+        async function loadTableData() {
+            dispatch(setLoading(true));
             try {
-                // 1. Fetch straight from API
-                const data = await getTable('sales-items');
-                
-                // 2. Dispatch to Redux (Just like initializeData!)
-                dispatch(setTableData({ tableName: 'sales-items', data }));
+                // Fetch dynamically using currentTable
+                const data = await getTable(currentTable);
+                dispatch(setTableData({ tableName: currentTable, data }));
             } catch (error) {
-                console.error("Failed to fetch candles:", error);
+                console.error(`Failed to fetch ${currentTable}:`, error);
+            } finally {
+                dispatch(setLoading(false));
             }
         }
 
-        loadCandles();
-    }, [dispatch]);
+        loadTableData();
+    }, [currentTable, dispatch]);
 
     return (
         <div style={{ padding: '2rem' }}>

@@ -7,10 +7,12 @@ import { PRIMARY_KEYS, resolveTableInfo } from './schemaRegistry';
 type TableName = keyof typeof mockData;
 
 interface DataState {
-    [key: string]: any[];
+    currentTable: string;
+    [key: string]: any;
 }
 
 const initialState: DataState = {
+    currentTable: 'candles', // Default fallback
     candles: [],
     customers: [],
     employees: [],
@@ -26,7 +28,7 @@ const dataSlice = createSlice({
     reducers: {
         // Replaces the whole store (Initial Load / Reset)
         initializeData: (state, action: PayloadAction<DataState>) => {
-            const normalizedData: DataState = {};
+            const normalizedData: DataState = { currentTable: state.currentTable };
             for (const key in action.payload) {
                 const normalizedKey = key.toLowerCase().replace(/ /g, '-');
                 if (normalizedKey in initialState) {
@@ -34,6 +36,11 @@ const dataSlice = createSlice({
                 }
             }
             return { ...initialState, ...normalizedData };
+        },
+
+        setCurrentTable: (state, action: PayloadAction<string>) => {
+            const tableInfo = resolveTableInfo(action.payload);
+            state.currentTable = tableInfo?.feKey || action.payload;
         },
 
         // ✅ NEW: Replaces a SINGLE table's data (Just like initializeData!)
@@ -56,10 +63,10 @@ const dataSlice = createSlice({
 
         updateRowFields: (state, action: PayloadAction<{ tableName: TableName; id: number | string; updatedFields: any }>) => {
             const { tableName, id, updatedFields } = action.payload;
-            const pk = PRIMARY_KEYS[tableName] || resolveTableInfo(tableName)?.pkColumn;
+            const pk = PRIMARY_KEYS[tableName] || resolveTableInfo(tableName)?.pkColumn || 'id';
             const tableData = state[tableName];
             if (tableData) {
-                const rowIndex = tableData.findIndex(item => item[pk] === id);
+                const rowIndex = tableData.findIndex((item: any) => item[pk] === id);
                 if (rowIndex !== -1) {
                     tableData[rowIndex] = { ...tableData[rowIndex], ...updatedFields };
                 }
@@ -75,9 +82,9 @@ const dataSlice = createSlice({
 
         deleteRow: (state, action: PayloadAction<{ tableName: TableName; id: number | string }>) => {
             const { tableName, id } = action.payload;
-            const pk = PRIMARY_KEYS[tableName] || resolveTableInfo(tableName)?.pkColumn;
+            const pk = PRIMARY_KEYS[tableName] || resolveTableInfo(tableName)?.pkColumn || 'id';
             if (state[tableName]) {
-                state[tableName] = state[tableName].filter(item => item[pk] !== id);
+                state[tableName] = state[tableName].filter((item: any) => item[pk] !== id);
             }
         },
     },
@@ -85,7 +92,8 @@ const dataSlice = createSlice({
 
 export const {
     initializeData,
-    setTableData, // 👈 Export it here
+    setCurrentTable,
+    setTableData,
     insertRow,
     updateRowFields,
     updateCellValue,
